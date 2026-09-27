@@ -20,6 +20,27 @@ or enable username/password authentication when exposing it more widely.
 NOTE: `BIND` is intentionally not implemented; it is rejected with
 `Command not supported` (REP `0x07`).
 
+## Docker 镜像
+
+GitHub Actions 仅在推送 `v*` 格式的 Git tag（例如 `v2.0.0`）时构建多架构镜像（`linux/amd64`、`linux/arm64`），并发布到 GitHub Container Registry：
+
+```bash
+docker pull ghcr.io/yenole/socks5-rs:latest
+docker run --rm -p 8080:8080/tcp -p 8080:8080/udp ghcr.io/yenole/socks5-rs:latest
+```
+
+需要认证时，通过 Docker 环境变量 `SOCKS5_USERNAME` 和 `SOCKS5_PASSWORD` 同时设置用户名和密码。Docker 启动脚本会将其转换为程序所需的 `-u`、`-P` 参数；Rust 程序本身无需读取环境变量：
+
+```bash
+docker run --rm \\
+  -p 8080:8080/tcp -p 8080:8080/udp \\
+  -e SOCKS5_USERNAME=alice \\
+  -e SOCKS5_PASSWORD='your-secret' \\
+  ghcr.io/yenole/socks5-rs:latest
+```
+
+两个环境变量必须同时提供，单独设置其中一个会报错退出。不设置时不启用认证。首次从 GHCR 拉取时，如果仓库包为私有，请先登录并确保包可见性允许访问。
+
 ## Compiling
 install Rust toolchain: [click here to install Rust](https://www.rust-lang.org/tools/install) 
 
